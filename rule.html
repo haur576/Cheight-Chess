@@ -1,0 +1,34 @@
+<h3><strong>Game Rules:</strong></h3>
+    <strong>Movements:</strong><br/>
+      <b>兵/卒</b>: Moves forward only. Promote at the end rank.<br>
+      <b>炮/包</b>: Move and capture like a cannon in Chinese Chess.<br>
+      <b>傌/馬</b>: Move like a knight. Blocked by obstacles directly in front.<br>
+      <b>俥/車</b>: Move like a rook: any blocks horizontally & vertically<br>
+      <b>相/象</b>: Move like a bishop: any blocks diagonally.<br>
+      <b>仕/士</b>: Move one step diagonally. Has special skills<br>
+      <b>帥/將</b>: Moves like a king: one block in 8-neighborhood.<br>
+      <hr>
+      <strong>Move and Capturing(Stacking):</strong><br/>
+      Except 炮/包, every piece captures exactly like it moves.<br/>
+      When capturing, you don't remove your opponent's piece; Instead, you stack your piece on and cover it.<br>
+      Only pieces shown on top can move. Whenever a piece is moved away, the lower pieces show up again.<br/> 
+      You lose (or the other wins) when your king is stacked by any piece. <br/>
+      <hr>
+    <strong>Height & Blockade:</strong><br/>
+    The height of a piece is the number of pieces below it. <br/>
+    You are only blocked by a piece of the same height; Think of you move a piece at its height, and then drop the piece at the target grid.<br/>
+    When capturing, ignore the height of the target grid. That means you can always capture a piece regardless of its height!<br/>
+    <strong>Example of blockades:</strong><br/>
+    A height-2 傌/馬 is not blocked by any height-0 or height-1 pieces.<br/>
+    A height-4 俥/車 is only blocked by a stack of pieces with height at least 4, and thus may usually attack several pieces in a row at the same time!<br/>
+    A height-1 炮/包 is not blocked by any height-0 pieces. As any movement before blocked is considered a move, you cannot stop upon an opponent's piece if nothing is blocking between.<br/>
+    (Remember: "Move" means you move a piece to an empty grid or above another piece of yourself;<br/>
+    "Capture" means you move a piece to an opponent's piece.)<br/>
+    <hr>
+    <strong>Special moves of 仕/士:</strong><br/>
+    When 仕/士 moves, it can always stack on any piece --- even if they are same side!<br/>
+    Furthermore, when 仕/士 moves, it can carry any number of pieces right below it to a new grid.
+    <hr>
+    <strong> Promotion of 兵/卒:</strong><br/>
+    When a 兵/卒 appears on top at the end rank, you switch its place with another non-兵/卒 piece of the same side.<br/>
+    Note that you cannot select a top piece in the end rank, but you can select other pieces in the end rank.
