@@ -1,6 +1,8 @@
 # Cheight-Chess
 A new version of combination of Chinese Chess and Classic Chess where we capture pieces by simply stack on it.
 
+Here to play: https://haur576.github.io/Cheight-Chess/
+
 ### **Why Cheight Chess?**
 In the beginning, we want to find the limit of how dense a chessboard could be. Ultimately, as a Chinese chess container box usually comes in size of 4\*4\*2, we would like to know if there is a way of playing a game directly on this size. And this game appeared.
 
