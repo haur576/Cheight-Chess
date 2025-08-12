@@ -18,14 +18,14 @@ const boardElement = document.getElementById("board");
 
     function restart(){
       board = [
-        ["象\n士", "將", "卒", "象\n士"],
+        ["象\n士", "卒", "將", "象\n士"],
         ["車", "馬\n包", "馬\n包", "車"],
         ["卒", "卒", "卒", "卒"],
         ["", "", "", ""],
         ["", "", "", ""],
         ["兵", "兵", "兵", "兵"],
         ["俥", "傌\n炮", "傌\n炮", "俥"],
-        ["相\n仕", "帥", "兵", "相\n仕"]
+        ["相\n仕", "兵", "帥", "相\n仕"]
       ];
       undoButton.disabled=true;
       winner = 0;
