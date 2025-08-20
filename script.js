@@ -108,24 +108,10 @@ const boardElement = document.getElementById("board");
           boardElement.appendChild(cell);
         }
       }
-      if (document.getElementById('evalbar-container')?.style.display === 'flex') updateEvalBar();
+      if (!promotioning && document.getElementById('evalbar-container')?.style.display === 'flex') updateEvalBar();
     }
 
-    // // Self-defined evaluation function: positive for red, negative for black
-    function evaluateBoard() {
-    //   // Example: count red pieces - black pieces
-    //   let red = 0, black = 0;
-    //   for (let r = 0; r < rowNo; r++) {
-    //     for (let c = 0; c < colNo; c++) {
-    //       const pieces = board[r][c].split("\n");
-    //       for (const p of pieces) {
-    //         if (isRed(p)) red++;
-    //         if (isBlack(p)) black++;
-    //       }
-    //     }
-    //   }
-      return (movecount % 10)-5;
-    }
+    
 
     // cdef + 12345678
     const toMoveString = pos => String.fromCharCode(99 + pos[1])+(rowNo-pos[0]);
