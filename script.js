@@ -1,4 +1,8 @@
-const boardElement = document.getElementById("board");
+/* Most of the script codes are here. 
+  Considering separate them into smaller files (but for now maybe don't have to)
+  
+*/
+    const boardElement = document.getElementById("board");
     const selectionRow = document.getElementById("selection-row");
     const infoBox = document.getElementById('infoBox');
     const moveLog = document.getElementById('moveLog');
@@ -8,7 +12,7 @@ const boardElement = document.getElementById("board");
     let colNo;
     let prevBoard;
     let winner = 0;
-    let promotioning = false;
+    let promotioning = null;
     
     let whosTurn = null;
     let movecount = 0;
@@ -18,7 +22,8 @@ const boardElement = document.getElementById("board");
     let moveFrom = null;
     let moveTo = null;
 
-    function restart(mode=0){
+    //newGame: Resetting the board and set up parameters.
+    function newGame(mode=0){
       board = JSON.parse(JSON.stringify(games[mode].board));
       rowNo = games[mode].row;
       colNo = games[mode].col;
@@ -26,7 +31,7 @@ const boardElement = document.getElementById("board");
       
       undoButton.disabled=true;
       winner = 0;
-      promotioning = false;
+      promotioning = null;
       whosTurn = -1;
       movecount = 0;
       selected = null;
@@ -38,11 +43,15 @@ const boardElement = document.getElementById("board");
       drawBoard();
       addLog("=====New Game Start=====");
     }
+    //DEPRECATED restart by newGame: This name suggests better
+    function restart(mode=0){ newGame(mode) }
     
     const isRed = c => /[帥兵俥傌炮相仕]/.test(c);
     const isBlack = c => /[將卒車馬包象士]/.test(c);
+    //height: The piece on the ground has height 1
     const height = (x, y) => board[x][y].split("\n").length;
 
+    //Subfunction of drawBoard(). Check the status (win/lose/promoting) of the board by the board itself.
     function checkRule(){
       winner = 0;
       for (let r = 0; r < rowNo; r++) {
@@ -62,8 +71,14 @@ const boardElement = document.getElementById("board");
         }
       }
     }
+
+    // drawBoard: update the elements of board.
+    // Currently it calls checkRule for rule checking (because it need to know what the status is as well)
+    // Also update the eval bar if needed.
     function drawBoard() {
       checkRule();
+      if (!promotioning && document.getElementById('evalbar')?.style.display === 'flex') updateEvalBar();
+
       boardElement.innerHTML = "";
       for (let r = 0; r < rowNo; r++) {
         for (let c = 0; c < colNo; c++) {
@@ -108,10 +123,7 @@ const boardElement = document.getElementById("board");
           boardElement.appendChild(cell);
         }
       }
-      if (!promotioning && document.getElementById('evalbar')?.style.display === 'flex') updateEvalBar();
     }
-
-    
 
     // cdef + 12345678
     const toMoveString = pos => String.fromCharCode(99 + pos[1])+(rowNo-pos[0]);
@@ -125,7 +137,6 @@ const boardElement = document.getElementById("board");
       moveLog.appendChild(logLine);
       moveLog.scrollTop = moveLog.scrollHeight;
     }
-
     function showAlert(msg) {
       infoBox.innerText = msg;
       infoBox.classList.remove("info");
@@ -135,20 +146,21 @@ const boardElement = document.getElementById("board");
     function showInfo(msg) {
       infoBox.innerText = msg;
     }
-    function clearInfoBox() {
+    function clearInfoBox(){
       infoBox.classList.remove("alert");
       infoBox.classList.add("info");
       infoBox.innerText = "";
     }
-
+    
+    //changeSide: Add move counter by 1 if changing from black to red.
     function changeSide(){
       whosTurn = whosTurn*-1;
       if(whosTurn == 1) movecount+=1;
       showInfo(`Now: ${whosTurn==1? '🔴' : '⚫'}'s turn.`)
     }
     
+    //handleClick: Directly called when clicking cells.
     function handleClick(r, c) {
-      selectionRow.innerHTML = "";
       if(winner!=0) return;
       if(!promotioning){
         if (selected) {
@@ -188,7 +200,8 @@ const boardElement = document.getElementById("board");
             selected = null;
             validMoves = [];
           }
-        } else if (board[r][c]) {
+        } else
+        if (board[r][c]) {
           const [piece] = board[r][c].split("\n");
           if(isRed(piece)==(whosTurn==1)){
             selected = [r, c];
@@ -196,36 +209,18 @@ const boardElement = document.getElementById("board");
           }
         }
         drawBoard();
-        if(board[r][c]){
-          selectionRow.innerHTML = "";
-          const piece = board[r][c].split("\n");
-          
-          const top = document.createElement("div");
-          top.classList.add("cell");
-          top.innerText="Top"
-          selectionRow.appendChild(top)
-          for(let i=0; i<piece.length;i++){
-            const now= piece[i]
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-            cell.innerText = now.substring(0,1);
-            cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
-            selectionRow.appendChild(cell);
-          }
-          const bottom = document.createElement("div");
-          bottom.classList.add("cell");
-          bottom.innerText="Bottom"
-          selectionRow.appendChild(bottom)
-        }
       }
-      else{ //promotioning
-        whosPromoting = -whosTurn //Back one step
-        if(board[r][c]){
-          selectionRow.innerHTML = "";
+      drawSelection(r,c)
+    }
+    function drawSelection(r,c){
+      if(!board[r][c])return;
+
+      if(!promotioning){
+        selectionRow.innerHTML = "";
           const piece = board[r][c].split("\n");
           
           const top = document.createElement("div");
-          top.classList.add("cell");
+          // top.classList.add("cell");
           top.innerText="Top"
           selectionRow.appendChild(top)
           for(let i=0; i<piece.length;i++){
@@ -234,20 +229,41 @@ const boardElement = document.getElementById("board");
             cell.classList.add("cell");
             cell.innerText = now.substring(0,1);
             cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
-            if(now === "兵" || now === "卒" || isRed(now) != (whosPromoting==1)) 
-              cell.classList.add("unavailable");
-            else if (i==0 && ((whosPromoting==1 && r==0) || (whosPromoting==-1 && r==rowNo-1))){
-              cell.classList.add("unavailable");
-            }
-            else 
-              cell.onclick = () => promotionEnd(r,c,i);
             selectionRow.appendChild(cell);
           }
           const bottom = document.createElement("div");
-          bottom.classList.add("cell");
+          // bottom.classList.add("cell");
           bottom.innerText="Bottom"
           selectionRow.appendChild(bottom)
+      }
+      else {
+        whosPromoting = ( promotioning[0] ==0 ) ? 1: -1; // 1 for 兵, -1 for 卒
+        selectionRow.innerHTML = "";
+        const piece = board[r][c].split("\n");
+        
+        const top = document.createElement("div");
+        // top.classList.add("cell");
+        top.innerText="Top"
+        selectionRow.appendChild(top)
+        for(let i=0; i<piece.length;i++){
+          const now= piece[i]
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.innerText = now.substring(0,1);
+          cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
+          if(now === "兵" || now === "卒" || isRed(now) != (whosPromoting==1)) 
+            cell.classList.add("unavailable");
+          else if (i==0 && ((whosPromoting==1 && r==0) || (whosPromoting==-1 && r==rowNo-1))){
+            cell.classList.add("unavailable");
+          }
+          else 
+            cell.onclick = () => promotionEnd(r,c,i);
+          selectionRow.appendChild(cell);
         }
+        const bottom = document.createElement("div");
+        // bottom.classList.add("cell");
+        bottom.innerText="Bottom"
+        selectionRow.appendChild(bottom)
       }
     }
     
