@@ -4,6 +4,8 @@ const boardElement = document.getElementById("board");
     const moveLog = document.getElementById('moveLog');
     const undoButton = document.getElementById('undo-button');
     let board;
+    let rowNo;
+    let colNo;
     let prevBoard;
     let winner = 0;
     let promotioning = false;
@@ -16,28 +18,12 @@ const boardElement = document.getElementById("board");
     let moveFrom = null;
     let moveTo = null;
 
-    function restart(){
-      board = [
-        ["象\n士", "卒\n包", "將\n包", "象\n士"],
-        ["卒\n車", "卒\n馬", "卒\n馬", "卒\n車"],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["兵\n俥", "兵\n傌", "兵\n傌", "兵\n俥"],
-        ["相\n仕", "兵\n炮", "帥\n炮", "相\n仕"]
-      ];
-      // board = [
-      //   ["象\n士", "卒", "將", "象\n士"],
-      //   ["車", "馬\n包", "馬\n包", "車"],
-      //   ["卒", "卒", "卒", "卒"],
-      //   ["", "", "", ""],
-      //   ["", "", "", ""],
-      //   ["兵", "兵", "兵", "兵"],
-      //   ["俥", "傌\n炮", "傌\n炮", "俥"],
-      //   ["相\n仕", "兵", "帥", "相\n仕"]
-      // ];
-
+    function restart(mode=0){
+      board = JSON.parse(JSON.stringify(games[mode].board));
+      rowNo = games[mode].row;
+      colNo = games[mode].col;
+      KingTakeKing= games[mode].KingTakeKing;
+      
       undoButton.disabled=true;
       winner = 0;
       promotioning = false;
@@ -48,6 +34,7 @@ const boardElement = document.getElementById("board");
       moveTo = null;
       validMoves = [];
       changeSide();
+      games[mode].Start()
       drawBoard();
       addLog("=====New Game Start=====");
     }
@@ -58,12 +45,12 @@ const boardElement = document.getElementById("board");
 
     function checkRule(){
       winner = 0;
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 4; c++) {
+      for (let r = 0; r < rowNo; r++) {
+        for (let c = 0; c < colNo; c++) {
           const piece = board[r][c];
           const [top, ...rest] = piece.split("\n");
             if(r==0 && top == "兵") promotionBegin(r,c)
-            if(r==7 && top == "卒") promotionBegin(r,c)
+            if(r==rowNo-1 && top == "卒") promotionBegin(r,c)
           if (piece.indexOf("\n將")!=-1){
             winner=1;
             showInfo("🔴 wins!");
@@ -78,8 +65,8 @@ const boardElement = document.getElementById("board");
     function drawBoard() {
       checkRule();
       boardElement.innerHTML = "";
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 4; c++) {
+      for (let r = 0; r < rowNo; r++) {
+        for (let c = 0; c < colNo; c++) {
           const cell = document.createElement("div");
           cell.classList.add("cell");
           const piece = board[r][c];
@@ -121,10 +108,27 @@ const boardElement = document.getElementById("board");
           boardElement.appendChild(cell);
         }
       }
+      if (document.getElementById('evalbar-container')?.style.display === 'flex') updateEvalBar();
+    }
+
+    // // Self-defined evaluation function: positive for red, negative for black
+    function evaluateBoard() {
+    //   // Example: count red pieces - black pieces
+    //   let red = 0, black = 0;
+    //   for (let r = 0; r < rowNo; r++) {
+    //     for (let c = 0; c < colNo; c++) {
+    //       const pieces = board[r][c].split("\n");
+    //       for (const p of pieces) {
+    //         if (isRed(p)) red++;
+    //         if (isBlack(p)) black++;
+    //       }
+    //     }
+    //   }
+      return (movecount % 10)-5;
     }
 
     // cdef + 12345678
-    const toMoveString = pos => String.fromCharCode(99 + pos[1])+(8-pos[0]);
+    const toMoveString = pos => String.fromCharCode(99 + pos[1])+(rowNo-pos[0]);
 
     function addMoveLog(from, to, movedPiece, special="") {
       addLog(`${movecount} ${isRed(movedPiece) ? '🔴' : '⚫'} ${movedPiece}: (${toMoveString(from)}) → (${toMoveString(to)})` + (special?", "+special:""));
@@ -246,7 +250,7 @@ const boardElement = document.getElementById("board");
             cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
             if(now === "兵" || now === "卒" || isRed(now) != (whosPromoting==1)) 
               cell.classList.add("unavailable");
-            else if (i==0 && ((whosPromoting==1 && r==0) || (whosPromoting==-1 && r==7))){
+            else if (i==0 && ((whosPromoting==1 && r==0) || (whosPromoting==-1 && r==rowNo-1))){
               cell.classList.add("unavailable");
             }
             else 
@@ -287,7 +291,7 @@ const boardElement = document.getElementById("board");
       const moves = [];
       const dr = isRed(piece) ? -1 : 1;
       const isEmpty = (x, y) => board[x][y] === "";
-      const inBounds = (x, y) => x >= 0 && x < 8 && y >= 0 && y < 4;
+      const inBounds = (x, y) => x >= 0 && x < rowNo && y >= 0 && y < colNo;
 
       const blocked = (x, y) => !inBounds(x, y) || (!isEmpty(x, y) && height(x,y)>= height(r,c));
       const otherSide = (x, y) => {
@@ -336,7 +340,9 @@ const boardElement = document.getElementById("board");
       } else if (/[仕士]/.test(piece)) {
         [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy])=>moves.push([r+dx,c+dy]));
       } else if (piece === "帥" || piece === "將") {
-        [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy])=>add(r+dx,c+dy));
+        [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy]) => {
+          if(KingTakeKing || !inBounds(r+dx,c+dy) || !/[帥將]/.test(board[r+dx][c+dy])) add(r+dx,c+dy)
+        });
       } else if (piece === "俥" || piece === "車") {
         [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
           for(let i=1;;i++){
@@ -359,4 +365,3 @@ const boardElement = document.getElementById("board");
       promotioning=null;
       drawBoard();
     }
-    restart();
