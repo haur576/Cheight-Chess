@@ -108,7 +108,7 @@ const boardElement = document.getElementById("board");
           boardElement.appendChild(cell);
         }
       }
-      if (!promotioning && document.getElementById('evalbar-container')?.style.display === 'flex') updateEvalBar();
+      if (!promotioning && document.getElementById('evalbar')?.style.display === 'flex') updateEvalBar();
     }
 
     

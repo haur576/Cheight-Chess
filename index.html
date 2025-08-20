@@ -172,33 +172,68 @@
     .help-container:hover .help-tooltip {
       display: block;
     }
+    #evalbar-container {
+      position: relative;
+      width: 24px;
+      height: 480px;
+      margin-right: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
     #evalbar{
-      width:20px; 
-      height:480px; 
+      width:24px; 
+      height:96%; 
       background:linear-gradient(to bottom, #aaaaaa, #000000);
-      border:1px solid #aaa; 
+      border:1px solid #fff; 
       position:relative; 
+      align-self: top;
       display:flex; 
       flex-direction:column; 
       justify-content:flex-end;
     }
+    #evalbar-label {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 0;
+      left: 0;
+      font-size: 16px;
+      color: #222;
+    }
     #evalbar-fill{
-      width:100%; 
+      display:flex;
+      width:100%;
+      width:100%;
       background:linear-gradient(to top, #aaaaaa, #ff7777); 
-      transition: height 0.5s cubic-bezier(.4,2,.6,1);
-      /* position:absolute; 
-      bottom:0; 
-      left:0; */
+      transition: height 1s cubic-bezier(.4,2,.6,1);
+    }
+    #toggle-evalbar {
+      position: relative;
+      left: 0;
+      bottom: 0;
+      width: 25px;
+      min-width: 24px;
+      max-width: 32px;
+      margin: 0;
+      padding: 3px 2px;
+      border-radius: 0 0 7px 7px;
+      border: 1px solid #aaa;
+      background: #eee;
+      font-size: 14px;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
   <div class="game-container">
-    <div id="evalbar-container" style="display:flex; align-items:center; margin-right:10px;">
-      <div id="evalbar">
+    <div id="evalbar-container" >
+      <div id="evalbar" style="display:flex;">
+        <div id="evalbar-label"></div>
         <div id="evalbar-fill"></div>
-        <div id="evalbar-label" style="position:absolute; width:100%; text-align:center; top:0; left:0; font-size:12px; color:#222;"></div>
       </div>
+      <button id="toggle-evalbar" onclick="toggleEvalBar()">On</button>
+      
     </div>
     <div class="board-container">
       <div id="board" class="board"></div>
@@ -211,7 +246,7 @@
         <button onclick="undoMove()" id="undo-button">Undo</button>
         <button onclick="changeGamemode()">Restart</button>
         <select id="gamemode-select" onchange="changeGamemode()" style="margin-right:10px;"></select>
-        <button id="toggle-evalbar" onclick="toggleEvalBar()" style="margin-right:10px;">Toggle Eval</button>
+        
         <div class="help-container">
           <!-- <button class="help-button" data-tooltip="rules">?</button> -->
           <button class="help-button" data-tooltip="how">i</button>
@@ -239,14 +274,20 @@
   <script>
     // Toggle evaluation bar
     function toggleEvalBar() {
-      const container = document.getElementById('evalbar-container');
-      container.style.display = (container.style.display === 'none') ? 'flex' : 'none';
-      if (container.style.display === 'flex') updateEvalBar();
+      const evalbar = document.getElementById('evalbar');
+      const toggleButton = document.getElementById('toggle-evalbar');
+      if (evalbar.style.display === 'none') {
+        evalbar.style.display = 'flex';
+        toggleButton.innerText = 'On';
+        updateEvalBar();
+      } else {
+        evalbar.style.display = 'none';
+        toggleButton.innerText = 'Off';
+      }
     }
 
     // Update evaluation bar
     function updateEvalBar() {
-      const evalbar = document.getElementById('evalbar');
       const fill = document.getElementById('evalbar-fill');
       const label = document.getElementById('evalbar-label');
       const score = window.evaluateBoard(); // Should return a number, positive for red, negative for black
