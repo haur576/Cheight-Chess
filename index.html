@@ -25,7 +25,7 @@
       grid-template-columns: repeat(4, 60px);
       grid-template-rows: repeat(8, 60px);
       gap: 1px;
-      background: #000;
+      /* background: #000; */
     }
     #selection-row {
       margin-top: 10px;
@@ -169,28 +169,52 @@
       z-index: 100;
       box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
     }
-
     .help-container:hover .help-tooltip {
       display: block;
+    }
+    #evalbar{
+      width:20px; 
+      height:480px; 
+      background:linear-gradient(to bottom, #aaaaaa, #000000);
+      border:1px solid #aaa; 
+      position:relative; 
+      display:flex; 
+      flex-direction:column; 
+      justify-content:flex-end;
+    }
+    #evalbar-fill{
+      width:100%; 
+      background:linear-gradient(to top, #aaaaaa, #ff7777); 
+      transition: height 0.5s cubic-bezier(.4,2,.6,1);
+      /* position:absolute; 
+      bottom:0; 
+      left:0; */
     }
   </style>
 </head>
 <body>
   <div class="game-container">
-  <div class="board-container">
-    <div id="board" class="board"></div>
-    <div id="selection-row"></div>
-  </div>
+    <div id="evalbar-container" style="display:flex; align-items:center; margin-right:10px;">
+      <div id="evalbar">
+        <div id="evalbar-fill"></div>
+        <div id="evalbar-label" style="position:absolute; width:100%; text-align:center; top:0; left:0; font-size:12px; color:#222;"></div>
+      </div>
+    </div>
+    <div class="board-container">
+      <div id="board" class="board"></div>
+      <div id="selection-row"></div>
+    </div>
     <div class="info-panel">
       <div id="infoBox" class="info"></div>
       <div class="log-box" id="moveLog"></div>
       <div class="controls">
         <button onclick="undoMove()" id="undo-button">Undo</button>
-        <button onclick="restart()">Restart</button>
+        <button onclick="changeGamemode()">Restart</button>
+        <select id="gamemode-select" onchange="changeGamemode()" style="margin-right:10px;"></select>
+        <button id="toggle-evalbar" onclick="toggleEvalBar()" style="margin-right:10px;">Toggle Eval</button>
         <div class="help-container">
           <!-- <button class="help-button" data-tooltip="rules">?</button> -->
           <button class="help-button" data-tooltip="how">i</button>
-          
         </div>
       </div>
   </div>
@@ -209,17 +233,55 @@
       When promoting, click a grid and then a piece to switch its place with the promoting 兵/卒.<br>
       Have fun!
   </div>
+  <script src="./gamemode.js"></script>
   <script src="./script.js"></script>
   <script>
+    // Toggle evaluation bar
+    function toggleEvalBar() {
+      const container = document.getElementById('evalbar-container');
+      container.style.display = (container.style.display === 'none') ? 'flex' : 'none';
+      if (container.style.display === 'flex') updateEvalBar();
+    }
+
+    // Update evaluation bar
+    function updateEvalBar() {
+      const evalbar = document.getElementById('evalbar');
+      const fill = document.getElementById('evalbar-fill');
+      const label = document.getElementById('evalbar-label');
+      const score = window.evaluateBoard(); // Should return a number, positive for red, negative for black
+      // // Clamp score to [-100, 100] for bar display
+      // const clamped = Math.max(-100, Math.min(100, score));
+      // const percent = (clamped + 100) / 2; // 0 to 100
+      fill.style.height = (50+31.8*Math.atan(score/2)) + '%'; //57.3 ~ 180/pi
+      label.textContent = (score > 0 ? '🔴 +' : score < 0 ? '⚫ ' : '') + score.toFixed(1);
+    }
+    // Populate gamemode select dropdown
+    window.addEventListener('DOMContentLoaded', function() {
+      const select = document.getElementById('gamemode-select');
+      select.innerHTML = '';
+      window.games.forEach((g, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = g.name || `Mode ${i+1}`;
+        select.appendChild(opt);
+      });
+      restart()
+    });
+
+    // Change gamemode handler
+    function changeGamemode() {
+      restart( document.getElementById('gamemode-select').value );
+    }
+
     document.querySelectorAll('.help-button').forEach(btn => {
-    btn.addEventListener('mouseenter', () => {
-      const tooltipId = btn.dataset.tooltip === 'rules' ? 'tooltip-rules' : 'tooltip-how';
-      document.getElementById(tooltipId).style.display = 'block';
-    });
-    btn.addEventListener('mouseleave', () => {
-      const tooltipId = btn.dataset.tooltip === 'rules' ? 'tooltip-rules' : 'tooltip-how';
-      document.getElementById(tooltipId).style.display = 'none';
-    });
+      btn.addEventListener('mouseenter', () => {
+        const tooltipId = btn.dataset.tooltip === 'rules' ? 'tooltip-rules' : 'tooltip-how';
+        document.getElementById(tooltipId).style.display = 'block';
+      });
+      btn.addEventListener('mouseleave', () => {
+        const tooltipId = btn.dataset.tooltip === 'rules' ? 'tooltip-rules' : 'tooltip-how';
+        document.getElementById(tooltipId).style.display = 'none';
+      });
     });
   </script>
 </body>
