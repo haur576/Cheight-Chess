@@ -52,5 +52,16 @@ games = [
         ["卒\n車", "卒\n卒", "將\n卒", "卒\n車"],
         ["兵\n俥", "兵\n兵", "帥\n兵", "兵\n俥"],
         ["相\n仕", "傌\n炮", "傌\n炮", "相\n仕"]
-      ], false, "Extra rule: In minimal games, 帥/將 cannot take each other.")
+      ], false, "Extra rule: In minimal games, 帥/將 cannot take each other."),
+  new gamemode (
+  "Test", 8, 4,
+  [ ["卒", "", "將", ""],
+    ["", "卒", "", ""],
+    ["", "", "", ""],
+    ["", "", "", ""],
+    ["", "", "", ""],
+    ["", "", "", ""],
+    ["", "", "兵", ""],
+    ["", "", "帥", "兵"]
+  ]) 
 ]
