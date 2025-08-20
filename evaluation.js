@@ -9,7 +9,7 @@
 */
 function pieceVal(piece,r,c){
   if (piece === "兵"){
-    let Promdist = rowNo-r
+    let Promdist = r
     if(Promdist == 0) return 6; 
     if(Promdist == 1) return 5; 
     if(Promdist == 2) return 3; 
@@ -17,7 +17,7 @@ function pieceVal(piece,r,c){
     return 1
   }
   else if (piece === "卒") {
-    let Promdist = r-1;
+    let Promdist = rowNo-1-r;
     if(Promdist == 0) return 6; 
     if(Promdist == 1) return 5; 
     if(Promdist == 2) return 3; 
@@ -33,8 +33,8 @@ function pieceVal(piece,r,c){
     else if (/[仕]/.test(piece)) return  6;
     else if (piece === "車") return 6;
     else if (piece === "俥") return  6;
-    else if (piece === "將") return  0; //Handled by another way.
-    else if (piece === "帥") return  0; //Handled by another way.
+    else if (piece === "將") return  10000000; //Super important
+    else if (piece === "帥") return  10000000; //Super important
     else return 0; //The piece is empty
 }
 
@@ -81,12 +81,12 @@ function Ev(stack,r,c,rK,bK){
   if (!/[仕士]/.test(top)){
     return (isRed(top) ? 1 : -1) 
            * ( controlScore(top,r,c,rK,bK) 
-             + Math.max( 0, pieceVal(top)+ (isRed(top) ? 1 : -1) * lambda*Ev(below,r,c,rK,bK)))
+             + Math.max( 0, pieceVal(top,r,c)+ (isRed(top) ? 1 : -1) * lambda*Ev(below,r,c,rK,bK)))
   }
   else{
     return (isRed(top) ? 1 : -1) 
            * ( controlScore(top,r,c,rK,bK) 
-             + pieceVal(top)
+             + pieceVal(top,r,c)
              + lambda * Math.max( 0, Array.from({length: below.length}, (_, i) => (isRed(top) ? 1 : -1) *Ev(below.slice(i),r,c,rK,bK))))
   }
 }
