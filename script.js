@@ -215,56 +215,38 @@
     function drawSelection(r,c){
       if(!board[r][c])return;
 
-      if(!promotioning){
-        selectionRow.innerHTML = "";
-          const piece = board[r][c].split("\n");
-          
-          const top = document.createElement("div");
-          // top.classList.add("cell");
-          top.innerText="Top"
-          selectionRow.appendChild(top)
-          for(let i=0; i<piece.length;i++){
-            const now= piece[i]
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-            cell.innerText = now.substring(0,1);
-            cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
-            selectionRow.appendChild(cell);
-          }
-          const bottom = document.createElement("div");
-          // bottom.classList.add("cell");
-          bottom.innerText="Bottom"
-          selectionRow.appendChild(bottom)
-      }
-      else {
-        whosPromoting = ( promotioning[0] ==0 ) ? 1: -1; // 1 for 兵, -1 for 卒
-        selectionRow.innerHTML = "";
-        const piece = board[r][c].split("\n");
+      selectionRow.innerHTML = "";
+      const piece = board[r][c].split("\n");
+      
+      const top = document.createElement("div");
+      top.innerText="Top"
+      selectionRow.appendChild(top)
+      
+      let whosPromoting;
+      if(promotioning) whosPromoting = ( promotioning[0] ==0 ) ? 1: -1; // 1 for 兵, -1 for 卒
+
+      for(let i=0; i<piece.length;i++){
+        const now = piece[i]
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerText = now.substring(0,1);
+        cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
         
-        const top = document.createElement("div");
-        // top.classList.add("cell");
-        top.innerText="Top"
-        selectionRow.appendChild(top)
-        for(let i=0; i<piece.length;i++){
-          const now= piece[i]
-          const cell = document.createElement("div");
-          cell.classList.add("cell");
-          cell.innerText = now.substring(0,1);
-          cell.classList.add(isRed(now) ? "red" : isBlack(now) ? "black" : "");
+        if(promotioning){
           if(now === "兵" || now === "卒" || isRed(now) != (whosPromoting==1)) 
             cell.classList.add("unavailable");
           else if (i==0 && ((whosPromoting==1 && r==0) || (whosPromoting==-1 && r==rowNo-1))){
             cell.classList.add("unavailable");
           }
-          else 
-            cell.onclick = () => promotionEnd(r,c,i);
-          selectionRow.appendChild(cell);
+          else cell.onclick = () => promotionEnd(r,c,i);
         }
-        const bottom = document.createElement("div");
-        // bottom.classList.add("cell");
-        bottom.innerText="Bottom"
-        selectionRow.appendChild(bottom)
+
+        selectionRow.appendChild(cell);
       }
+
+      const bottom = document.createElement("div");
+      bottom.innerText="Bottom"
+      selectionRow.appendChild(bottom)
     }
     
     function promotionBegin(r,c){
@@ -274,11 +256,11 @@
     function promotionEnd(r,c,i){
       let pieces = board[r][c].split("\n");
       const piece = pieces[i];
-      const [pr,pc] =promotioning;
+      const [pr,pc] = promotioning;
       const pawn = board[pr][pc][0];
-      board[pr][pc] = piece + board[pr][pc].substring(1,);
       pieces[i] = pawn;
       board[r][c] = pieces.join("\n");
+      board[pr][pc] = piece + board[pr][pc].substring(1,);
       selectionRow.innerHTML = "";
       drawBoard();
       showInfo(`Promotion end. Now: ${whosTurn==1? '🔴' : '⚫'}'s turn.`)
